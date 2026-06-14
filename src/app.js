@@ -24,4 +24,13 @@ app.use(express.static("public"))
 //by using this we can access the user's browser's cookie from our server
 app.use(cookieParser())
 
+app.get("/", (req,res)=>{res.status(200).json({message:"Server is working"})})
+
+
+// ROUTES IMPORT
+import authRouter from "../src/routes/auth.routes.js"
+
+// ROUTES DECLARATION
+app.use("/api/v1/auth", authRouter)
+
 export default app;

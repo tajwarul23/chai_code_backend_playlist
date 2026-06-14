@@ -13,7 +13,7 @@ receive local file path as parameter, upload the file, if the successfully uploa
 unlink from the local server
 */
 
-uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) {
       return null;

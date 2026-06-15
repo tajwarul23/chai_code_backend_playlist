@@ -3,6 +3,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { UserModel } from "../models/user.model.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken"
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, fullname } = req.body;
@@ -88,6 +89,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     user._id,
   );
 
+
   const loggedInUser = await UserModel.findById(user._id).select(
     "-password -refreshToken",
   );
@@ -114,8 +116,8 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await UserModel.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
 
     //save the refresh token to DB
     user.refreshToken = refreshToken;
@@ -150,3 +152,36 @@ export const logoutUser = asyncHandler(async (req, res) => {
   .clearCookie("refreshToken",options)
   .json(new ApiResponse(200, null, "User logged out"))
 });
+
+export const refreshAccessToken = asyncHandler(async(req,res)=>{
+
+  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+  if(!incomingRefreshToken){
+    throw new ApiError(401,"Unauthorized Request")
+
+    const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+    const user = await UserModel.findById(decodedToken._id);
+
+    if(!user){
+      throw new ApiError(401, "Invalid Refresh token")
+    }
+
+    if(incomingRefreshToken !== user?.refreshToken){
+      throw new ApiError(401, "Invalid Refresh expired or used")
+    }
+    const {accessToken, refreshToken:newRefreshToken} = await generateAccessAndRefreshToken(user._id);
+
+    const options = {
+      httpOnly:true,
+      secure:true
+    }
+
+    res
+    .status(200)
+    .cookie("accessToken",accessToken)
+    .cookie("refreshToken", newRefreshToken)
+    .json(new ApiResponse(200,{accessToken,refreshToken:newRefreshToken},"New Refresh token generated"))
+  }
+})

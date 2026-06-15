@@ -1,13 +1,16 @@
-import multer  from "multer";
-
+import multer from "multer";
+import fs from "fs"
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./public/temp")
+    const dir = "./public/temp";
+    // console.log("Saving to:", dir);
+    // console.log("Folder exists:", fs.existsSync(dir));
+    cb(null, dir);
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname )
-  }
-})
+    cb(null, file.originalname);
+  },
+});
 
- const upload = multer({ storage: storage });
+const upload = multer({ storage: storage });
 export default upload;

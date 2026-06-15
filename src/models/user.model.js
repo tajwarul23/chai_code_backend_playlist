@@ -16,12 +16,13 @@ const userSchema = new Schema({
         unique:true,
         lowercase: true,
         trim:true,
+        index:true
     },
     fullname:{
         type:String,
         required: [true, "fullname is required"],
         trim:true,
-        index:true
+        
     },
     avatar:{
         type:String,
@@ -55,9 +56,6 @@ userSchema.pre("save",async function(next){
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
-userSchema.statics.findByEmail = async function(email) {
-  return await this.findOne({ email });
-};
 
 userSchema.methods.generateAccessToken = async function(){
    return jwt.sign(

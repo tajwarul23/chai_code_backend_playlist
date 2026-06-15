@@ -178,10 +178,10 @@ export const refreshAccessToken = asyncHandler(async(req,res)=>{
       secure:true
     }
 
-    res
+    return res
     .status(200)
-    .cookie("accessToken",accessToken)
-    .cookie("refreshToken", newRefreshToken)
+    .cookie("accessToken",accessToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
     .json(new ApiResponse(200,{accessToken,refreshToken:newRefreshToken},"New Refresh token generated"))
   }
 })

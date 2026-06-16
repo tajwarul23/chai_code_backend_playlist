@@ -2,7 +2,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { UserModel } from "../models/user.model.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -13,26 +13,21 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const { avatar } = req.files;
-  if (!avatar) throw new ApiError(400, "Avatar is required bc");
   const existedUser = await UserModel.findOne({
     $or: [{ username }, { email }],
   });
-
-  if (existedUser) {
+   if (existedUser) {
     throw new ApiError(409, "User with email or username already exist..!");
   }
+  
+  const { avatar } = req.files;
+  if (!avatar) throw new ApiError(400, "Avatar is required");
+  
 
   //the path is from multer, where we upload files to our local server first
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   const coverImagePath = req.files?.coverImage?.[0]?.path;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(
-      400,
-      "Avatar file is required from avatar from avatarLocalPath",
-    );
-  }
 
   const avatarResponse = await uploadOnCloudinary(avatarLocalPath);
   const coverImageResponse = coverImagePath
@@ -225,3 +220,52 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, req.user, "Current user fetched successfully"));
 });
+
+export const updateAvatar = asyncHandler(async(req,res)=>{
+
+  const localFilePath = req.file?.path;
+  if(!localFilePath){
+    
+    throw new ApiError(401, "file is required")
+  }
+  //upload new avatar to cloudinary
+  const uploadResponse = await uploadOnCloudinary(localFilePath);
+  if(!uploadResponse?.url){
+    throw new ApiError(500, "Failed to upload avatar")
+  }
+  const newAvatar = uploadResponse.url;
+
+  const user = await UserModel.findById(req.user._id);
+   if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const oldAvatar = user.avatar;
+  user.avatar = newAvatar;
+  await user.save({validateBeforeSave:false});
+
+    if(oldAvatar){
+     deleteFromCloudinary(oldAvatar).catch((err)=>{
+      console.log("Old avatar cleanup failed",err);
+      
+    })
+  }
+  return res.status(200).json(new ApiResponse(200,newAvatar, "Avatar updated"))
+})
+
+export const updateProfile = asyncHandler(async(req,res)=>{
+  const {fullname, email} = req.body;
+  if(!fullname || !email){
+    throw new ApiError(400, "All fields are required")
+  }
+
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    req.user?._id,
+    {$set:{fullname, email}},
+    {new:true}
+  ).select("fullname email")
+
+   if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+  return res.status(200).json(new ApiResponse(200,updatedUser, "User info updated successfully"))
+})

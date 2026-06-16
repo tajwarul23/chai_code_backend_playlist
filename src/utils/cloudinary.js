@@ -16,7 +16,7 @@ receive local file path as parameter, upload the file, if the successfully uploa
 unlink from the local server
 */
 
-const uploadOnCloudinary = async (localFilePath) => {
+export const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) {
       return null;
@@ -41,4 +41,17 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-export default uploadOnCloudinary;
+export const deleteFromCloudinary = async(url)=>{
+  try {
+    if(url){
+      
+       const publicId = url.split("/").pop().split(".")[0];
+       
+       const res = await cloudinary.uploader.destroy(publicId);
+       
+    }
+  } catch (error) {
+    console.log("Error in deleting file from cloudinary", error.message);
+    
+  }
+}

@@ -1,5 +1,5 @@
 import express from "express";
-import { loginUser, registerUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateProfile, updateAvatar } from "../controllers/user.controller.js";
+import { loginUser, registerUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateProfile, updateAvatar, getUserWatchHistory, getChannelProfile } from "../controllers/user.controller.js";
 import upload from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -21,10 +21,16 @@ authRouter.post(
 );
 
 //secured routes
+
 authRouter.post("/logout", verifyJWT, logoutUser);
 authRouter.post("/refresh-token", refreshAccessToken)
 authRouter.post("/change-password", verifyJWT, changeCurrentPassword)
 authRouter.get("/get-user", verifyJWT, getCurrentUser);
-authRouter.post("/update-avatar", verifyJWT, upload.single("avatar"), updateAvatar);
-authRouter.post("/update-profile", verifyJWT,  updateProfile);
+authRouter.patch("/update-avatar", verifyJWT, upload.single("avatar"), updateAvatar);
+authRouter.patch("/update-profile", verifyJWT,  updateProfile);
+/**---- Testing done till "/update-profile" ------- */
+
+authRouter.get("/history", verifyJWT, getUserWatchHistory);
+authRouter.get("/channel/:username", verifyJWT, getChannelProfile)
+
 export default authRouter;

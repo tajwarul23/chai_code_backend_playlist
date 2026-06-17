@@ -28,9 +28,9 @@ app.get("/", (req,res)=>{res.status(200).json({message:"Server is working"})})
 
 
 // ROUTES IMPORT
-import authRouter from "../src/routes/auth.routes.js"
+import authRouter from "../src/routes/user.route.js"
 
 // ROUTES DECLARATION
-app.use("/api/v1/auth", authRouter)
+app.use("/api/v1/user", authRouter)
 
 export default app;

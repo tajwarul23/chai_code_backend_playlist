@@ -10,6 +10,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 
+
+
 export const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, fullname } = req.body;
 

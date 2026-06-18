@@ -28,9 +28,9 @@ authRouter.post("/change-password", verifyJWT, changeCurrentPassword)
 authRouter.get("/get-user", verifyJWT, getCurrentUser);
 authRouter.patch("/update-avatar", verifyJWT, upload.single("avatar"), updateAvatar);
 authRouter.patch("/update-profile", verifyJWT,  updateProfile);
-/**---- Testing done till "/update-profile" ------- */
-
 authRouter.get("/history", verifyJWT, getUserWatchHistory);
 authRouter.get("/channel/:username", verifyJWT, getChannelProfile)
+
+/**---- Testing done till "/channel/:username" ------- */
 
 export default authRouter;
